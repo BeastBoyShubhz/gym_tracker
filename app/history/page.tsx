@@ -13,9 +13,10 @@ import {
 } from "@/components/ui/tabs";
 import { CATEGORY_ACCENT, CATEGORY_LABEL } from "@/lib/defaults";
 import { cn, formatDate } from "@/lib/utils";
-import { Beef, Droplet, Flame, Scale } from "lucide-react";
+import { ArrowUpRight, Beef, Droplet, Flame, Scale } from "lucide-react";
 import { WeightChart } from "@/components/weight-chart";
 import { LEGACY_EXERCISE_NAMES } from "@/lib/exercise-aliases";
+import { getExerciseTutorialUrl } from "@/lib/tutorial";
 
 export default function HistoryPage() {
   const { hydrated, state } = useStore();
@@ -136,11 +137,20 @@ export default function HistoryPage() {
                         Rest day completed.
                       </p>
                     )}
-                    {Object.entries(log.entries).map(([exId, sets]) => (
+                    {Object.entries(log.entries).map(([exId, sets]) => {
+                      const exName = exerciseNameById[exId] ?? exId;
+                      return (
                       <div key={exId} className="space-y-1.5">
-                        <p className="text-sm font-medium">
-                          {exerciseNameById[exId] ?? exId}
-                        </p>
+                        <a
+                          href={getExerciseTutorialUrl(exName)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex w-fit items-center gap-1 text-sm font-medium underline-offset-4 hover:underline focus-visible:underline"
+                          aria-label={`Open tutorial for ${exName}`}
+                        >
+                          <span>{exName}</span>
+                          <ArrowUpRight className="h-3 w-3 shrink-0 opacity-60" />
+                        </a>
                         <div className="flex flex-wrap gap-1.5">
                           {sets.map((s, i) => (
                             <span
@@ -156,7 +166,8 @@ export default function HistoryPage() {
                           ))}
                         </div>
                       </div>
-                    ))}
+                    );
+                    })}
                   </CardContent>
                 </Card>
               );

@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Flame, LineChart as LineIcon } from "lucide-react";
+import { ArrowUpRight, Flame, LineChart as LineIcon } from "lucide-react";
+import { getExerciseTutorialUrl } from "@/lib/tutorial";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -168,7 +169,18 @@ export function ExercisePRDetail({
         className="max-h-[85vh] overflow-y-auto"
       >
         <SheetHeader>
-          <SheetTitle className="text-base">{exercise.name}</SheetTitle>
+          <SheetTitle className="text-base">
+            <a
+              href={getExerciseTutorialUrl(exercise.name)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex w-fit items-center gap-1 underline-offset-4 hover:underline focus-visible:underline"
+              aria-label={`Open tutorial for ${exercise.name}`}
+            >
+              <span>{exercise.name}</span>
+              <ArrowUpRight className="h-3.5 w-3.5 shrink-0 opacity-60" />
+            </a>
+          </SheetTitle>
           <SheetDescription>
             All-time PRs and progression history
           </SheetDescription>

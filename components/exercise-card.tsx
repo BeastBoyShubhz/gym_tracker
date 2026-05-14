@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import {
+  ArrowUpRight,
   Check,
   ChevronUp,
   Flame,
@@ -12,6 +13,7 @@ import {
   Trash2,
   X,
 } from "lucide-react";
+import { getExerciseTutorialUrl } from "@/lib/tutorial";
 import type { Equipment, TemplateExercise, Unit, SetEntry } from "@/lib/types";
 import { useStore } from "@/lib/store";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -155,9 +157,18 @@ export function ExerciseCard({
       <CardHeader className="pb-3">
         <CardTitle className="flex items-start justify-between gap-3 text-base">
           <span className="flex min-w-0 flex-1 flex-col gap-1">
-            <span className="break-words font-semibold leading-tight">
-              {exercise.name}
-            </span>
+            <a
+              href={getExerciseTutorialUrl(exercise.name)}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="group/title inline-flex w-fit items-center gap-1 break-words font-semibold leading-tight underline-offset-4 hover:underline focus-visible:underline"
+              aria-label={`Open tutorial for ${exercise.name}`}
+              title="Open how-to video"
+            >
+              <span>{exercise.name}</span>
+              <ArrowUpRight className="h-3.5 w-3.5 shrink-0 opacity-60 transition-opacity group-hover/title:opacity-100" />
+            </a>
             <span className="flex flex-wrap items-center gap-1.5">
               <span
                 className={cn(
