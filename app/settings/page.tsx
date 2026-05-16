@@ -1,15 +1,9 @@
 "use client";
 
-import { Fragment, useState } from "react";
-import { Plus, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { ChevronDown, Plus, Trash2 } from "lucide-react";
 import { useStore } from "@/lib/store";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -75,8 +69,8 @@ export default function SettingsPage() {
     });
 
   return (
-    <div className="space-y-5">
-      <header>
+    <div className="space-y-3">
+      <header className="pb-1">
         <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted-foreground">
           Configure
         </p>
@@ -85,14 +79,14 @@ export default function SettingsPage() {
         </h1>
       </header>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Profile</CardTitle>
-          <CardDescription>
-            Used for BMI and to auto-compute maintenance calories.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
+      <SettingsSection
+        title="Profile"
+        description="Used for BMI and to auto-compute maintenance calories."
+        summary={`${state.settings.heightCm} cm · ${
+          state.settings.sex ?? "—"
+        }`}
+      >
+        <div className="space-y-4">
           <div className="space-y-1.5">
             <Label htmlFor="height">Height (cm)</Label>
             <Input
@@ -148,14 +142,18 @@ export default function SettingsPage() {
               ).pop()?.weight ?? null
             }
           />
-        </CardContent>
-      </Card>
+        </div>
+      </SettingsSection>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Goals</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
+      <SettingsSection
+        title="Goals"
+        summary={
+          state.settings.goalWeightKg
+            ? `Goal ${state.settings.goalWeightKg} ${state.settings.unit}`
+            : "No goal set"
+        }
+      >
+        <div className="space-y-4">
           <div className="space-y-1.5">
             <Label htmlFor="goal-weight">
               Goal weight ({state.settings.unit}, optional)
@@ -179,41 +177,37 @@ export default function SettingsPage() {
               className="font-mono text-base"
             />
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </SettingsSection>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Display</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-1.5">
-            <Label>Units</Label>
-            <div className="flex gap-2">
-              {(["kg", "lb"] as const).map((u) => (
-                <Button
-                  key={u}
-                  variant={state.settings.unit === u ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setUnit(u)}
-                  className="uppercase"
-                >
-                  {u}
-                </Button>
-              ))}
-            </div>
+      <SettingsSection
+        title="Display"
+        summary={`Units · ${state.settings.unit.toUpperCase()}`}
+      >
+        <div className="space-y-1.5">
+          <Label>Units</Label>
+          <div className="flex gap-2">
+            {(["kg", "lb"] as const).map((u) => (
+              <Button
+                key={u}
+                variant={state.settings.unit === u ? "default" : "outline"}
+                size="sm"
+                onClick={() => setUnit(u)}
+                className="uppercase"
+              >
+                {u}
+              </Button>
+            ))}
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </SettingsSection>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Daily targets</CardTitle>
-          <CardDescription>
-            Hydration, protein, calorie goals for the food tracker.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-3">
+      <SettingsSection
+        title="Daily targets"
+        description="Hydration, protein, calorie goals for the food tracker."
+        summary={`${state.settings.targets.calories} kcal · ${state.settings.targets.proteinG} g protein`}
+      >
+        <div className="space-y-3">
           <TargetRow
             label="Water (ml)"
             value={state.settings.targets.waterMl}
@@ -257,17 +251,17 @@ export default function SettingsPage() {
               lifestyle factor).
             </p>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </SettingsSection>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Weekly schedule</CardTitle>
-          <CardDescription>
-            Map each weekday to a workout template.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-2">
+      <SettingsSection
+        title="Weekly schedule"
+        description="Map each weekday to a workout template."
+        summary={`${
+          Object.values(state.settings.schedule).filter(Boolean).length
+        }/7 days mapped`}
+      >
+        <div className="space-y-2">
           {DAY_NAMES.map((name, i) => (
             <div
               key={i}
@@ -299,17 +293,15 @@ export default function SettingsPage() {
               </div>
             </div>
           ))}
-        </CardContent>
-      </Card>
+        </div>
+      </SettingsSection>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Workout templates</CardTitle>
-          <CardDescription>
-            Edit names, exercises, target sets and rep ranges.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-3">
+      <SettingsSection
+        title="Workout templates"
+        description="Edit names, exercises, target sets and rep ranges."
+        summary={`${state.settings.templates.length} templates`}
+      >
+        <div className="space-y-3">
           {state.settings.templates.map((t) => (
             <TemplateEditor
               key={t.id}
@@ -319,69 +311,117 @@ export default function SettingsPage() {
             />
           ))}
           <AddTemplate onAdd={upsertTemplate} />
-        </CardContent>
-      </Card>
+        </div>
+      </SettingsSection>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Hardcore mode</CardTitle>
-          <CardDescription>
-            Push notifications that don&apos;t coddle you. Save the app to your
-            home screen first.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <HardcoreToggle />
-        </CardContent>
-      </Card>
+      <SettingsSection
+        title="Hardcore notifications"
+        description="Push notifications that don't coddle you. Save the app to your home screen first."
+      >
+        <HardcoreToggle />
+      </SettingsSection>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Backup &amp; access</CardTitle>
-          <CardDescription>
-            Export your data as JSON, import a backup, or lock the app.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-3">
+      <SettingsSection
+        title="Backup & access"
+        description="Export your data as JSON, import a backup, or lock the app."
+      >
+        <div className="space-y-3">
           <DataIO />
-        </CardContent>
-      </Card>
+        </div>
+      </SettingsSection>
 
-      <Card className="border-destructive/30">
-        <CardHeader>
-          <CardTitle className="text-destructive">Danger zone</CardTitle>
-          <CardDescription>
-            Wipe all logs and restore defaults.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <AlertDialog>
-            <AlertDialogTrigger
-              render={
-                <Button variant="destructive" size="sm">
-                  Reset everything
-                </Button>
-              }
-            />
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Reset all data?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This deletes your workouts, food, weight history, and
-                  restores defaults. Cannot be undone.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={resetAll}>
-                  Reset
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </CardContent>
-      </Card>
+      <SettingsSection
+        title="Danger zone"
+        description="Wipe all logs and restore defaults."
+        tone="danger"
+      >
+        <AlertDialog>
+          <AlertDialogTrigger
+            render={
+              <Button variant="destructive" size="sm">
+                Reset everything
+              </Button>
+            }
+          />
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Reset all data?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This deletes your workouts, food, weight history, and restores
+                defaults. Cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={resetAll}>Reset</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </SettingsSection>
     </div>
+  );
+}
+
+function SettingsSection({
+  title,
+  description,
+  summary,
+  tone,
+  defaultOpen = false,
+  children,
+}: {
+  title: string;
+  description?: string;
+  summary?: string;
+  tone?: "danger";
+  defaultOpen?: boolean;
+  children: React.ReactNode;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <Card
+      className={cn(
+        "border-border/70 transition-colors",
+        tone === "danger" && "border-destructive/30"
+      )}
+    >
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
+      >
+        <span className="flex min-w-0 flex-1 flex-col">
+          <span
+            className={cn(
+              "font-heading text-base font-medium leading-snug",
+              tone === "danger" && "text-destructive"
+            )}
+          >
+            {title}
+          </span>
+          {(description || summary) && (
+            <span className="truncate text-xs text-muted-foreground">
+              {summary || description}
+            </span>
+          )}
+        </span>
+        <ChevronDown
+          className={cn(
+            "h-4 w-4 shrink-0 text-muted-foreground transition-transform",
+            open && "rotate-180"
+          )}
+        />
+      </button>
+      {open && (
+        <div className="space-y-3 border-t border-border/40 px-4 pb-4 pt-4">
+          {description && summary && (
+            <p className="text-xs text-muted-foreground">{description}</p>
+          )}
+          {children}
+        </div>
+      )}
+    </Card>
   );
 }
 

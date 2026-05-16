@@ -5,7 +5,7 @@ import { CalendarDays } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { todayISO, formatDate, cn } from "@/lib/utils";
 import { CATEGORY_ACCENT, CATEGORY_LABEL, DAY_NAMES } from "@/lib/defaults";
-import { ExerciseCard } from "@/components/exercise-card";
+import { ExerciseCarousel } from "@/components/exercise-carousel";
 import { LEGS_TEMPLATE } from "@/lib/legs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -99,16 +99,16 @@ export default function HomePage() {
 
   return (
     <div className="space-y-5">
-      <header className="space-y-3">
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted-foreground">
+      <header className="space-y-4">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
               {DAY_NAMES[dayOfWeek]}
             </p>
-            <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+            <h1 className="truncate text-2xl font-semibold tracking-tight sm:text-3xl">
               {template?.name ?? "Rest"}
             </h1>
-            <p className="flex items-center gap-2 text-sm text-muted-foreground">
+            <p className="flex items-center gap-2 text-xs text-muted-foreground">
               <CalendarDays className="h-3.5 w-3.5" />
               {formatDate(date)}
               <SaveIndicator />
@@ -117,7 +117,7 @@ export default function HomePage() {
           {template && (
             <div
               className={cn(
-                "rounded-full border px-3 py-1.5 font-mono text-xs uppercase tracking-wider",
+                "shrink-0 rounded-full border px-3 py-1.5 font-mono text-[11px] uppercase tracking-wider",
                 CATEGORY_ACCENT[template.category]
               )}
             >
@@ -128,18 +128,20 @@ export default function HomePage() {
 
         <DateNav date={date} onChange={(d) => setDate(d)} />
 
-        <div className="grid grid-cols-2 gap-2">
-          <WeightPill date={date} />
-          <HeightPill />
+        <div className="space-y-2">
+          <div className="grid grid-cols-2 gap-2">
+            <WeightPill date={date} />
+            <HeightPill />
+          </div>
+          <BmiBar
+            weightKg={
+              state.settings.unit === "lb" && currentWeight != null
+                ? currentWeight / 2.2046
+                : currentWeight
+            }
+            heightCm={state.settings.heightCm}
+          />
         </div>
-        <BmiBar
-          weightKg={
-            state.settings.unit === "lb" && currentWeight != null
-              ? currentWeight / 2.2046
-              : currentWeight
-          }
-          heightCm={state.settings.heightCm}
-        />
         <StreakBar
           workoutStreak={ws}
           foodStreak={fs}
@@ -173,16 +175,11 @@ export default function HomePage() {
           )}
 
           {showWorkout && template && template.exercises.length > 0 ? (
-            <section className="space-y-4">
-              {template.exercises.map((exercise) => (
-                <ExerciseCard
-                  key={exercise.id}
-                  exercise={exercise}
-                  date={date}
-                  unit={state.settings.unit}
-                />
-              ))}
-            </section>
+            <ExerciseCarousel
+              exercises={template.exercises}
+              date={date}
+              unit={state.settings.unit}
+            />
           ) : isRestDay ? (
             <RestState />
           ) : null}
@@ -196,16 +193,11 @@ export default function HomePage() {
           <p className="rounded-lg border border-border/40 bg-card/40 px-3 py-2 text-sm text-muted-foreground">
             {LEGS_TEMPLATE.focus}
           </p>
-          <section className="space-y-4">
-            {LEGS_TEMPLATE.exercises.map((exercise) => (
-              <ExerciseCard
-                key={exercise.id}
-                exercise={exercise}
-                date={date}
-                unit={state.settings.unit}
-              />
-            ))}
-          </section>
+          <ExerciseCarousel
+            exercises={LEGS_TEMPLATE.exercises}
+            date={date}
+            unit={state.settings.unit}
+          />
         </TabsContent>
       </Tabs>
     </div>

@@ -5,10 +5,12 @@ import {
   ArrowUpRight,
   Check,
   ChevronUp,
+  Copy,
   Flame,
   MinusCircle,
   Pencil,
   Plus,
+  Repeat,
   StickyNote,
   Trash2,
   X,
@@ -135,6 +137,31 @@ export function ExerciseCard({
     });
   };
 
+  const copyFromPreviousSession = () => {
+    if (!last?.sets || last.sets.length === 0) return;
+    setDrafts(() => {
+      const seeded: Draft[] = last.sets.map((s) => ({
+        weight: String(s.weight),
+        reps: String(s.reps),
+      }));
+      setSets(date, exercise.id, draftsToEntries(seeded));
+      return seeded;
+    });
+  };
+
+  const duplicateLastSet = () => {
+    setDrafts((prev) => {
+      // Take the last *filled* set as the seed, else fall back to last row.
+      const filled = [...prev].reverse().find(
+        (d) => d.weight !== "" && d.reps !== ""
+      );
+      const seed: Draft = filled ?? prev[prev.length - 1] ?? blankDraft;
+      const next = [...prev, { ...seed }];
+      setSets(date, exercise.id, draftsToEntries(next));
+      return next;
+    });
+  };
+
   const removeSet = (idx: number) => {
     setDrafts((prev) => {
       const next = prev.filter((_, i) => i !== idx);
@@ -152,48 +179,51 @@ export function ExerciseCard({
   const equipment: Equipment = exercise.equipment ?? inferEquipment(exercise.name);
   const usesPlates = equipment === "barbell";
 
+  const lastSummary = last?.sets?.[0]
+    ? `${last.sets[0].weight}${unit} × ${last.sets[0].reps}${
+        last.sets.length > 1 ? ` · ${last.sets.length} sets` : ""
+      }`
+    : null;
+
   return (
-    <Card className="border-border/70">
+    <Card className="border-border/70" data-no-swipe>
       <CardHeader className="pb-3">
         <CardTitle className="flex items-start justify-between gap-3 text-base">
-          <span className="flex min-w-0 flex-1 flex-col gap-1">
+          <span className="flex min-w-0 flex-1 flex-col gap-2">
             <a
               href={getExerciseTutorialUrl(exercise.name)}
               target="_blank"
               rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
-              className="group/title inline-flex w-fit items-center gap-1 break-words font-semibold leading-tight underline-offset-4 hover:underline focus-visible:underline"
+              className="group/title inline-flex w-fit items-center gap-1 break-words text-lg font-semibold leading-tight underline-offset-4 hover:underline focus-visible:underline sm:text-xl"
               aria-label={`Open tutorial for ${exercise.name}`}
               title="Open how-to video"
             >
               <span>{exercise.name}</span>
-              <ArrowUpRight className="h-3.5 w-3.5 shrink-0 opacity-60 transition-opacity group-hover/title:opacity-100" />
+              <ArrowUpRight className="h-4 w-4 shrink-0 opacity-60 transition-opacity group-hover/title:opacity-100" />
             </a>
             <span className="flex flex-wrap items-center gap-1.5">
               <span
                 className={cn(
-                  "inline-flex items-center rounded-md border px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-wider",
+                  "inline-flex items-center rounded-md border px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wider",
                   EQUIPMENT_TONE[equipment]
                 )}
               >
                 {EQUIPMENT_LABEL[equipment]}
               </span>
-              <span className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
-                {exercise.sets} × {repsTarget} reps
+              <span className="rounded-md border border-border/60 bg-muted/30 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wider text-foreground/85">
+                Target {exercise.sets}×{repsTarget}
               </span>
+              {lastSummary && (
+                <span className="rounded-md border border-border/40 bg-card/40 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                  Last {lastSummary} · {daysAgo(last!.date)}
+                </span>
+              )}
             </span>
           </span>
           <div className="flex shrink-0 flex-col items-end gap-1">
             <PRBadges flags={flags} />
-            {last && (
-              <Badge
-                variant="secondary"
-                className="font-mono text-[10px] tracking-wide"
-              >
-                last · {daysAgo(last.date)}
-              </Badge>
-            )}
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1" data-no-swipe>
               <PrLadder
                 exerciseId={exercise.id}
                 beforeDate={date}
@@ -264,14 +294,42 @@ export function ExerciseCard({
             </div>
           );
         })}
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={addSet}
-          className="w-full"
-        >
-          <Plus className="h-4 w-4" /> Add set
-        </Button>
+        <div className="grid grid-cols-3 gap-1.5">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={addSet}
+            aria-label="Add an empty set"
+          >
+            <Plus className="h-4 w-4" />
+            Add set
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={duplicateLastSet}
+            aria-label="Duplicate the last filled set"
+            title="Duplicate last set"
+          >
+            <Repeat className="h-4 w-4" />
+            Duplicate
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={copyFromPreviousSession}
+            disabled={!last?.sets || last.sets.length === 0}
+            aria-label="Copy sets from last session"
+            title={
+              last
+                ? `Copy ${last.sets.length} sets from ${last.date}`
+                : "No previous session"
+            }
+          >
+            <Copy className="h-4 w-4" />
+            Last session
+          </Button>
+        </div>
         <ProgressionHint
           status={advice.status}
           message={advice.message}

@@ -614,6 +614,16 @@ function FoodChip({
     }
   };
 
+  const cal = Math.round(food.caloriesPer * food.defaultAmount);
+  const pro = Math.round(food.proteinPer * food.defaultAmount * 10) / 10;
+  const car =
+    Math.round((food.carbsPer ?? 0) * food.defaultAmount * 10) / 10;
+  const fat =
+    Math.round((food.fatsPer ?? 0) * food.defaultAmount * 10) / 10;
+  const fib =
+    Math.round((food.fiberPer ?? 0) * food.defaultAmount * 10) / 10;
+  const amountLabel = `${food.defaultAmount}${UNIT_LABEL[food.unit]}`;
+
   return (
     <div className="group relative flex items-stretch gap-1 overflow-hidden rounded-lg border border-border/60 bg-card/40 transition-colors hover:border-foreground hover:bg-muted/30">
       <button
@@ -633,29 +643,33 @@ function FoodChip({
         onTouchEnd={cancelLongPress}
         onTouchMove={cancelLongPress}
         onTouchCancel={cancelLongPress}
-        className="flex min-w-0 flex-1 items-center gap-2 px-2.5 py-2 text-left text-sm select-none [-webkit-touch-callout:none]"
-        aria-label={`Add ${food.defaultAmount}${UNIT_LABEL[food.unit]} ${food.name}. Long press for custom amount.`}
+        className="flex min-w-0 flex-1 flex-col gap-1 px-2.5 py-2 text-left text-sm select-none [-webkit-touch-callout:none]"
+        aria-label={`Add ${amountLabel} ${food.name}. Long press for custom amount.`}
       >
-        <span className="shrink-0 text-lg">{food.emoji ?? "🍽"}</span>
-        <span className="flex min-w-0 flex-1 flex-col">
-          <span className="flex min-w-0 items-center gap-1 leading-tight">
-            <span className="truncate font-medium">{food.name}</span>
-            {mine && (
-              <span className="shrink-0 font-mono text-[9px] text-emerald-400">
-                yours
-              </span>
-            )}
-            {edited && (
-              <span className="shrink-0 font-mono text-[9px] text-amber-400">
-                edited
-              </span>
-            )}
+        <span className="flex min-w-0 items-center gap-1.5 leading-tight">
+          <span className="shrink-0 text-lg">{food.emoji ?? "🍽"}</span>
+          <span className="min-w-0 flex-1 truncate font-medium">
+            {food.name}
           </span>
-          <span className="truncate font-mono text-[10px] text-muted-foreground">
-            {Math.round(food.caloriesPer * food.defaultAmount)} kcal ·{" "}
-            {Math.round(food.proteinPer * food.defaultAmount * 10) / 10}g ·{" "}
-            {food.defaultAmount}
-            {UNIT_LABEL[food.unit]}
+          {mine && (
+            <span className="shrink-0 font-mono text-[9px] text-emerald-400">
+              yours
+            </span>
+          )}
+          {edited && (
+            <span className="shrink-0 font-mono text-[9px] text-amber-400">
+              edited
+            </span>
+          )}
+        </span>
+        <span className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 font-mono text-[10px] text-muted-foreground">
+          <span className="text-foreground/85">{cal} kcal</span>
+          <span>· P{pro}</span>
+          {car > 0 && <span>· C{car}</span>}
+          {fat > 0 && <span>· F{fat}</span>}
+          {fib > 0 && <span>· Fib{fib}</span>}
+          <span className="ml-auto rounded-sm border border-border/50 bg-muted/30 px-1 text-[9px] uppercase tracking-wider">
+            {amountLabel}
           </span>
         </span>
       </button>
@@ -715,9 +729,10 @@ function RecipeChip({
   };
 
   const totals = computeRecipeTotals(recipe);
+  const itemCount = recipe.ingredients.length;
 
   return (
-    <div className="group relative flex items-stretch gap-1 overflow-hidden rounded-lg border border-violet-500/50 bg-violet-500/5 transition-colors hover:border-violet-400 hover:bg-violet-500/10">
+    <div className="group relative flex items-stretch gap-1 overflow-hidden rounded-lg border border-violet-500/60 bg-violet-500/10 ring-1 ring-violet-500/20 transition-colors hover:border-violet-400 hover:bg-violet-500/15">
       <button
         onClick={(e) => {
           if (longPressTriggered.current) {
@@ -735,21 +750,26 @@ function RecipeChip({
         onTouchEnd={cancelLongPress}
         onTouchMove={cancelLongPress}
         onTouchCancel={cancelLongPress}
-        className="flex min-w-0 flex-1 items-center gap-2 px-2.5 py-2 text-left text-sm select-none [-webkit-touch-callout:none]"
+        className="flex min-w-0 flex-1 flex-col gap-1 px-2.5 py-2 text-left text-sm select-none [-webkit-touch-callout:none]"
         aria-label={`Add recipe ${recipe.name}. Long press to view ingredients.`}
       >
-        <span className="shrink-0 text-lg">{recipe.emoji ?? "🍽"}</span>
-        <span className="flex min-w-0 flex-1 flex-col">
-          <span className="flex min-w-0 items-center gap-1 leading-tight">
-            <span className="truncate font-medium">{recipe.name}</span>
-            <span className="shrink-0 rounded-md border border-violet-500/40 bg-violet-500/15 px-1 font-mono text-[8px] uppercase tracking-wider text-violet-300">
-              recipe
-            </span>
+        <span className="flex min-w-0 items-center gap-1.5 leading-tight">
+          <span className="shrink-0 text-lg">{recipe.emoji ?? "🍽"}</span>
+          <span className="min-w-0 flex-1 truncate font-medium">
+            {recipe.name}
           </span>
-          <span className="truncate font-mono text-[10px] text-muted-foreground">
-            {totals.calories} kcal · {totals.protein}g P ·{" "}
-            {recipe.ingredients.length}{" "}
-            {recipe.ingredients.length === 1 ? "item" : "items"}
+          <span className="shrink-0 rounded-md border border-violet-500/40 bg-violet-500/15 px-1 font-mono text-[8px] uppercase tracking-wider text-violet-300">
+            recipe
+          </span>
+        </span>
+        <span className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 font-mono text-[10px] text-muted-foreground">
+          <span className="text-foreground/85">{totals.calories} kcal</span>
+          <span>· P{totals.protein}</span>
+          {totals.carbs > 0 && <span>· C{totals.carbs}</span>}
+          {totals.fats > 0 && <span>· F{totals.fats}</span>}
+          {totals.fiber > 0 && <span>· Fib{totals.fiber}</span>}
+          <span className="ml-auto rounded-sm border border-violet-500/30 bg-violet-500/10 px-1 text-[9px] uppercase tracking-wider text-violet-200">
+            {itemCount} {itemCount === 1 ? "item" : "items"}
           </span>
         </span>
       </button>

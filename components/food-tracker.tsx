@@ -116,7 +116,12 @@ export function FoodTracker({ date }: { date: string }) {
 
       <Card className="border-border/70">
         <CardHeader className="pb-2">
-          <CardTitle className="text-base">Today&apos;s totals</CardTitle>
+          <CardTitle className="flex items-center justify-between gap-3 text-base">
+            <span>Today&apos;s totals</span>
+            <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+              {Math.round(log.calories)}/{targets.calories} kcal
+            </span>
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <TotalRow

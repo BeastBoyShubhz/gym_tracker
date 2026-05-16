@@ -34,14 +34,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <main
         className="flex-1 px-4 sm:px-6"
         style={{
-          paddingTop: "max(1.5rem, env(safe-area-inset-top))",
-          paddingBottom: "calc(7rem + env(safe-area-inset-bottom))",
+          paddingTop: "calc(env(safe-area-inset-top) + 1.25rem)",
+          paddingBottom:
+            "calc(env(safe-area-inset-bottom) + 6.5rem)",
         }}
       >
         {children}
       </main>
       <nav
-        className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background/85 backdrop-blur-md"
+        className="fixed inset-x-0 bottom-0 z-30 border-t border-border/60 bg-background/90 backdrop-blur-md"
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >
         <div className="mx-auto flex w-full max-w-2xl items-stretch justify-around">
@@ -56,13 +57,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex flex-1 flex-col items-center gap-1 py-3 text-xs font-medium transition-colors",
+                  "flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-medium transition-colors",
                   active
                     ? "text-foreground"
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
-                <Icon className="h-5 w-5" />
+                <Icon
+                  className={cn(
+                    "h-5 w-5 transition-transform",
+                    active && "scale-110"
+                  )}
+                />
                 {item.label}
               </Link>
             );
