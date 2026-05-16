@@ -195,7 +195,10 @@ export function ExerciseCarousel({ exercises, date, unit }: Props) {
       Math.abs(dx) > SWIPE_DISTANCE ||
       Math.abs(velocity) > VELOCITY_THRESHOLD;
     if (passed) {
-      if (dx < 0) goNext();
+      // Drag right (positive dx) advances to the next exercise — matches
+      // the cube rotation: the face that visually rotates in during a
+      // right-drag is the next exercise.
+      if (dx > 0) goNext();
       else goPrev();
     } else {
       setProgress(0);
@@ -251,10 +254,10 @@ export function ExerciseCarousel({ exercises, date, unit }: Props) {
   const prevExercise = exercises[prevIdx];
   const nextExercise = exercises[nextIdx];
 
-  // Container rotation: drag-right (progress > 0) shows previous face.
-  // Cube rotates around Y-axis. Faces are placed at -trackWidth/2 in front
-  // and at the sides at ±90deg.
-  const angle = -progress * MAX_ROTATION; // negative for natural drag direction
+  // Drag-right (progress > 0) should rotate the cube so the *right* face
+  // (the next exercise) comes into view — i.e. you visually see where
+  // you're going. Drag-left brings the left face (previous) forward.
+  const angle = progress * MAX_ROTATION;
   const halfWidth = trackWidth / 2;
 
   const transition = dragging
