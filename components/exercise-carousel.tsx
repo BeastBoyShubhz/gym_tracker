@@ -302,7 +302,6 @@ export function ExerciseCarousel({ exercises, date, unit }: Props) {
           />
         ) : (
           <CubeStage
-            width={trackWidth}
             angle={angle}
             transition={transition}
             front={current}
@@ -357,7 +356,6 @@ export function ExerciseCarousel({ exercises, date, unit }: Props) {
 }
 
 function CubeStage({
-  width,
   angle,
   transition,
   front,
@@ -367,7 +365,6 @@ function CubeStage({
   unit,
   halfWidth,
 }: {
-  width: number;
   angle: number;
   transition: string;
   front: TemplateExercise | undefined;
@@ -377,105 +374,74 @@ function CubeStage({
   unit: Unit;
   halfWidth: number;
 }) {
-  // Measure intrinsic height of the front face so the stage matches it.
-  const frontRef = useRef<HTMLDivElement | null>(null);
-  const [height, setHeight] = useState<number>(0);
-  useEffect(() => {
-    const el = frontRef.current;
-    if (!el) return;
-    const ro = new ResizeObserver(() => setHeight(el.offsetHeight));
-    ro.observe(el);
-    setHeight(el.offsetHeight);
-    return () => ro.disconnect();
-  }, [front?.id]);
-
+  // The front face renders in normal flow so its real height drives the
+  // stage. Side faces are absolutely positioned overlays of the same size.
+  // This is what makes the card's notes / progression hint / set rows
+  // contribute to the page layout — without this the stage collapses to
+  // its min-height and the lower content hides behind the prev/next row
+  // and the workout footer below it.
   return (
     <div
       className="relative w-full"
       style={{
-        height: height ? `${height}px` : undefined,
-        minHeight: "12rem",
+        transformStyle: "preserve-3d",
+        transform: `translate3d(0,0,${-halfWidth}px) rotateY(${angle}deg)`,
+        transition,
+        willChange: "transform",
       }}
     >
       <div
-        className="absolute inset-0"
         style={{
-          transformStyle: "preserve-3d",
-          transform: `translate3d(0,0,${-halfWidth}px) rotateY(${angle}deg)`,
-          transition,
-          willChange: "transform",
+          backfaceVisibility: "hidden",
+          transform: `translate3d(0,0,${halfWidth}px)`,
         }}
       >
-        <CubeFace
-          rotation={0}
-          width={width}
-          halfWidth={halfWidth}
-          ref={frontRef}
-        >
-          {front && (
-            <ExerciseCard
-              key={`front-${front.id}`}
-              exercise={front}
-              date={date}
-              unit={unit}
-            />
-          )}
-        </CubeFace>
-        <CubeFace rotation={90} width={width} halfWidth={halfWidth} aria-hidden>
-          {right && (
-            <ExerciseCard
-              key={`right-${right.id}`}
-              exercise={right}
-              date={date}
-              unit={unit}
-            />
-          )}
-        </CubeFace>
-        <CubeFace rotation={-90} width={width} halfWidth={halfWidth} aria-hidden>
-          {left && (
-            <ExerciseCard
-              key={`left-${left.id}`}
-              exercise={left}
-              date={date}
-              unit={unit}
-            />
-          )}
-        </CubeFace>
+        {front && (
+          <ExerciseCard
+            key={`front-${front.id}`}
+            exercise={front}
+            date={date}
+            unit={unit}
+          />
+        )}
+      </div>
+      <div
+        aria-hidden
+        className="absolute inset-0"
+        style={{
+          backfaceVisibility: "hidden",
+          transform: `rotateY(90deg) translate3d(0,0,${halfWidth}px)`,
+        }}
+      >
+        {right && (
+          <ExerciseCard
+            key={`right-${right.id}`}
+            exercise={right}
+            date={date}
+            unit={unit}
+          />
+        )}
+      </div>
+      <div
+        aria-hidden
+        className="absolute inset-0"
+        style={{
+          backfaceVisibility: "hidden",
+          transform: `rotateY(-90deg) translate3d(0,0,${halfWidth}px)`,
+        }}
+      >
+        {left && (
+          <ExerciseCard
+            key={`left-${left.id}`}
+            exercise={left}
+            date={date}
+            unit={unit}
+          />
+        )}
       </div>
     </div>
   );
 }
-
-type CubeFaceProps = {
-  rotation: number;
-  width: number;
-  halfWidth: number;
-  children: React.ReactNode;
-} & React.HTMLAttributes<HTMLDivElement>;
-
-const CubeFace = ({
-  rotation,
-  width,
-  halfWidth,
-  children,
-  ref,
-  ...rest
-}: CubeFaceProps & { ref?: React.Ref<HTMLDivElement> }) => {
-  return (
-    <div
-      ref={ref}
-      className="absolute inset-0"
-      style={{
-        width: width || "100%",
-        backfaceVisibility: "hidden",
-        transform: `rotateY(${rotation}deg) translate3d(0,0,${halfWidth}px)`,
-      }}
-      {...rest}
-    >
-      {children}
-    </div>
-  );
-};
 
 function PlainSlide({
   current,
