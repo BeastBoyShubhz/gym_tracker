@@ -48,3 +48,4 @@ next-env.d.ts
 
 # local exports / backups
 /gym-tracker-*.json
+/json exports/
